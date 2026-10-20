@@ -134,7 +134,7 @@ function sidebar() {
       <div class="review-card">
         <span class="review-step">SCHRITT 01</span>
         <strong>Erst ausprobieren.<br>Dann weiterdenken.</strong>
-        <p>Neue Verbindungen. Dein eigener Weg. Entwurf 02 wartet auf dein Feedback.</p>
+        <p>Klare Zeilen. Freie Anordnung. Entwurf 03 wartet auf dein Feedback.</p>
         <button data-action="review">Was kann ich testen? ${icon('arrow')}</button>
       </div>
       <div class="demo-identity"><span class="demo-avatar">D</span><span>Dein Raum<small>Lokaler Entwurf · Beispieldaten</small></span></div>
@@ -158,9 +158,16 @@ function basisSelect() {
 function daySection(day) {
   const dayTasks = orderedTasks(filteredTasks().filter((task) => task[state.dateBasis] === day));
   const isToday = day === today;
-  return `<section class="day-column ${isToday ? 'is-today' : ''}" data-date="${day}">
-    <header class="day-heading"><div><div class="day-eyebrow">${isToday ? '<span class="today-dot"></span>HEUTE' : day === addDays(today, 1) ? 'MORGEN' : formatDate(day, { weekday: 'long' }).toUpperCase()}</div><h3>${formatDate(day, { day: 'numeric', month: 'long' })}<span>${dayTasks.length} To-dos</span></h3></div><button class="icon-button add-day" data-action="new-task" data-date="${day}" aria-label="To-do für ${formatDate(day, { day: 'numeric', month: 'long', year: 'numeric' })} erstellen">${icon('plus')}</button></header>
-    <div class="day-tasks">${dayTasks.length ? dayTasks.map((task) => taskCard(task, state.layout === 'list')).join('') : `<button class="empty-day" data-action="new-task" data-date="${day}">${icon('plus')}<strong>Noch etwas Luft.</strong><span>Einen Schritt planen</span></button>`}</div>
+  const date = formatDate(day, { day: 'numeric', month: 'long' });
+  const weekday = isToday ? 'Heute' : day === addDays(today, 1) ? 'Morgen' : formatDate(day, { weekday: 'long' });
+  const addButton = `<button class="icon-button add-day" data-action="new-task" data-date="${day}" aria-label="To-do für ${formatDate(day, { day: 'numeric', month: 'long', year: 'numeric' })} erstellen">${icon('plus')}</button>`;
+  if (state.layout === 'list') return `<section class="agenda-day ${isToday ? 'is-today' : ''}" data-timeline-day data-date="${day}" aria-labelledby="agenda-date-${day}">
+    <header class="agenda-date"><h3 id="agenda-date-${day}">${date}</h3><span class="agenda-weekday">${weekday}</span><span class="agenda-day-count">${dayTasks.length} ${dayTasks.length === 1 ? 'To-do' : 'To-dos'}</span>${addButton}</header>
+    <div class="day-tasks">${dayTasks.length ? dayTasks.map((task) => taskCard(task, true)).join('') : `<button class="agenda-empty" data-action="new-task" data-date="${day}">${icon('plus')}Noch keine To-dos. Einen Schritt planen.</button>`}</div>
+  </section>`;
+  return `<section class="day-column ${isToday ? 'is-today' : ''}" data-timeline-day data-date="${day}">
+    <header class="day-heading"><div><div class="day-eyebrow">${isToday ? '<span class="today-dot"></span>' : ''}${weekday.toUpperCase()}</div><h3>${date}<span>${dayTasks.length} To-dos</span></h3></div>${addButton}</header>
+    <div class="day-tasks">${dayTasks.length ? dayTasks.map((task) => taskCard(task)).join('') : `<button class="empty-day" data-action="new-task" data-date="${day}">${icon('plus')}<strong>Noch etwas Luft.</strong><span>Einen Schritt planen</span></button>`}</div>
   </section>`;
 }
 
@@ -272,7 +279,7 @@ function timelineAnchor() {
   const axis = container.dataset.layout === 'columns' ? 'left' : 'top';
   const end = axis === 'left' ? 'right' : 'bottom';
   const start = container.getBoundingClientRect()[axis];
-  const day = [...container.querySelectorAll('.day-column')].find((element) => element.getBoundingClientRect()[end] > start + 5);
+  const day = [...container.querySelectorAll('[data-timeline-day]')].find((element) => element.getBoundingClientRect()[end] > start + 5);
   return day ? { date: day.dataset.date, offset: day.getBoundingClientRect()[axis] - start, layout: container.dataset.layout } : { date: state.anchor, offset: 0, layout: state.layout };
 }
 
@@ -284,7 +291,7 @@ function initializeTimeline(anchor) {
   const extent = horizontal ? 'scrollWidth' : 'scrollHeight';
   const viewport = horizontal ? 'clientWidth' : 'clientHeight';
   const axis = horizontal ? 'left' : 'top';
-  const target = container.querySelector(`[data-date="${anchor.date}"]`);
+  const target = container.querySelector(`[data-timeline-day][data-date="${anchor.date}"]`);
   if (target) container[position] += target.getBoundingClientRect()[axis] - container.getBoundingClientRect()[axis] - (anchor.layout === state.layout ? anchor.offset : 0);
   let queued = false;
   container.addEventListener('scroll', () => {
@@ -331,7 +338,7 @@ function render() {
     calendar: ['DEIN MONATSÜBERBLICK', 'Alles zu seiner Zeit.', 'Deine Termine im Blick. Dein nächster Schritt ganz nah.'],
   }[state.view];
   root.innerHTML = `${sidebar()}<main id="main-content" class="main-content" tabindex="-1">
-    <header class="topbar"><div class="breadcrumb"><span>fokus</span>${icon('right')}<strong>${viewLabels[state.view]}</strong></div><button class="review-pill" data-action="review"><span></span>Entwurf 02${icon('help')}</button></header>
+    <header class="topbar"><div class="breadcrumb"><span>fokus</span>${icon('right')}<strong>${viewLabels[state.view]}</strong></div><button class="review-pill" data-action="review"><span></span>Entwurf 03${icon('help')}</button></header>
     <section class="page-heading"><div><div class="eyebrow">${headings[0]}</div><h1>${headings[1]}</h1><p>${headings[2]}</p></div>${state.view === 'projects' ? `<button class="button button-primary primary-action" data-action="new-project">${icon('plus')}Neues Projekt</button>` : `<button class="button button-primary new-task-button primary-action" data-action="new-task" data-focus-key="new-task">${icon('plus')}Neues To-do<span class="key-hint">N</span></button>`}</section>
     <div id="view-content">${state.view === 'upcoming' ? upcomingView() : state.view === 'projects' ? projectsView() : calendarView()}</div>
     <footer class="page-footer"><span>Mit Absicht weniger. Mit Überblick mehr.</span><span>Bedienkonzept · Beispieldaten · Keine dauerhafte Speicherung</span></footer>
@@ -372,7 +379,7 @@ function setPriority(urgency, importance) {
 }
 
 function openTask(id = null, day = null, options = {}) {
-  clearConnection();
+  cancelGraphGesture();
   const task = id ? state.tasks.find((item) => item.id === id) : {
     title: '', description: '', projectId: options.projectId || (state.projectFilter === 'all' ? '' : state.projectFilter),
     plannedDate: options.undated || (day && state.dateBasis === 'dueDate') ? '' : day || state.anchor,
@@ -524,7 +531,7 @@ function refreshImagePreview() {
 }
 
 function openProject(id = null) {
-  clearConnection();
+  cancelGraphGesture();
   const project = state.projects.find((item) => item.id === id);
   editingProjectId = id;
   projectReturnFocus = document.activeElement;
@@ -677,6 +684,20 @@ function clearConnection() {
   connectionStatus('Knoten verschieben · Ausgang mit Eingang verbinden · Plus für einen Folgeschritt');
 }
 
+function cancelGraphGesture() {
+  const gesture = graphGesture;
+  graphGesture = null;
+  if (gesture) {
+    if (gesture.canvas.hasPointerCapture(gesture.pointerId)) gesture.canvas.releasePointerCapture(gesture.pointerId);
+    if (gesture.kind === 'move') {
+      state.tasks.find((task) => task.id === gesture.id).graph = gesture.original;
+      gesture.canvas.querySelector(`.graph-node[data-id="${gesture.id}"]`)?.classList.remove('is-dragging');
+      paintGraph();
+    }
+  }
+  clearConnection();
+}
+
 function selectPort(port) {
   if (!connectionStart || connectionStart.port === port.port) {
     const same = connectionStart?.id === port.id && connectionStart?.port === port.port;
@@ -716,7 +737,12 @@ function paintGraph() {
   svg.setAttribute('width', bounds.width);
   svg.setAttribute('height', bounds.height);
   svg.setAttribute('viewBox', `0 0 ${bounds.width} ${bounds.height}`);
-  svg.innerHTML = graphEdges(positions);
+  for (const edge of svg.querySelectorAll('.graph-edge')) {
+    const from = positions[edge.dataset.from];
+    const to = positions[edge.dataset.to];
+    const path = edgePath({ x: from.x + NODE_WIDTH, y: from.y + NODE_HEIGHT / 2 }, { x: to.x, y: to.y + NODE_HEIGHT / 2 });
+    for (const line of edge.querySelectorAll('.edge-line, .edge-hit')) line.setAttribute('d', path);
+  }
   for (const task of tasks) {
     const node = canvas.querySelector(`.graph-node[data-id="${task.id}"]`);
     node.style.left = `${task.graph.x}px`;
@@ -743,6 +769,7 @@ root.addEventListener('pointerdown', (event) => {
   const node = event.target.closest('.graph-node');
   if (!node || event.target.closest('.node-add-child')) return;
   event.preventDefault();
+  if (!port) clearConnection();
   const scroll = canvas.parentElement;
   const task = state.tasks.find((item) => item.id === node.dataset.id);
   graphGesture = {
@@ -814,14 +841,7 @@ root.addEventListener('pointerup', (event) => {
 for (const type of ['pointercancel', 'lostpointercapture']) {
   root.addEventListener(type, (event) => {
     if (!graphGesture || event.pointerId !== graphGesture.pointerId) return;
-    const gesture = graphGesture;
-    graphGesture = null;
-    if (gesture.kind === 'move') {
-      state.tasks.find((task) => task.id === gesture.id).graph = gesture.original;
-      gesture.canvas.querySelector(`.graph-node[data-id="${gesture.id}"]`)?.classList.remove('is-dragging');
-      paintGraph();
-    }
-    clearConnection();
+    cancelGraphGesture();
   });
 }
 
@@ -830,6 +850,7 @@ root.addEventListener('keydown', (event) => {
   const movement = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[event.key];
   if (grip && movement) {
     event.preventDefault();
+    cancelGraphGesture();
     const task = state.tasks.find((item) => item.id === grip.dataset.id);
     const step = event.shiftKey ? 40 : 10;
     task.graph.x = Math.max(36, task.graph.x + movement[0] * step);
@@ -848,6 +869,7 @@ root.addEventListener('click', (event) => {
   const button = event.target.closest('[data-action]');
   if (!button) return;
   if (button.closest('.graph-canvas') && event.detail > 0 && performance.now() < suppressGraphClickUntil) return;
+  if (graphGesture) cancelGraphGesture();
   const { action, id, view, date, offset, layout } = button.dataset;
   if (action === 'review') {
     reviewDialog.showModal();
@@ -867,7 +889,7 @@ root.addEventListener('click', (event) => {
     return;
   }
   if (action === 'port') {
-    selectPort({ id, port: button.dataset.port });
+    if (event.detail === 0) selectPort({ id, port: button.dataset.port });
     return;
   }
   if (action === 'move-node') return;
@@ -909,13 +931,13 @@ root.addEventListener('click', (event) => {
     state.layout = 'list';
     resetTimeline = true;
   } else if (action === 'auto-layout') {
+    cancelGraphGesture();
     const tasks = state.tasks.filter((task) => task.projectId === state.projectFilter);
     const positions = autoLayout(tasks, state.dependencies);
     for (const task of tasks) task.graph = positions[task.id];
-    clearConnection();
-    render();
+    paintGraph();
     root.querySelector('.graph-scroll')?.scrollTo(0, 0);
-    notify('Der Projektbaum ist wieder automatisch angeordnet.');
+    notify('Anordnung aktualisiert – alle Verbindungen bleiben unverändert.');
     return;
   } else if (action === 'remove-edge' && selectedEdge) {
     state.dependencies = state.dependencies.filter((edge) => !(edge.from === selectedEdge.from && edge.to === selectedEdge.to));
@@ -931,6 +953,7 @@ root.addEventListener('click', (event) => {
 });
 
 root.addEventListener('change', (event) => {
+  if (graphGesture) cancelGraphGesture();
   if (event.target.id === 'project-filter') {
     clearConnection();
     selectedEdge = null;
@@ -1063,7 +1086,7 @@ for (const dimension of ['urgency', 'importance']) {
   });
 }
 document.addEventListener('keydown', (event) => {
-  if (event.key === 'Escape' && !document.querySelector('dialog[open]')) clearConnection();
+  if (event.key === 'Escape' && !document.querySelector('dialog[open]')) cancelGraphGesture();
   if (event.key.toLowerCase() === 'n' && !event.ctrlKey && !event.metaKey && !event.altKey
     && !event.repeat && !event.target.closest('input, textarea, select, [contenteditable]')
     && !document.querySelector('dialog[open]')) {

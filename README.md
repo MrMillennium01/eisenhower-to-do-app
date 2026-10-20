@@ -2,7 +2,7 @@
 
 Eine Web-App für Prioritäten, Tagesplanung und Projektfortschritt, vorbereitet für eine spätere App mit React Native. Aufgaben erscheinen als verschiebbare Bausteine. Jede Aufgabe wird nur einmal gespeichert: Änderungen sind in allen Ansichten sichtbar.
 
-**Stand:** Schritt 1, Entwurf 02: klickbares Bedienkonzept mit bearbeitbarem Projektgraphen. Die eigentliche React-App mit Anmeldung und Datenbank folgt erst nach dem Review. Die Weckerfunktion bleibt der späteren nativen App vorbehalten.
+**Stand:** Schritt 1, Entwurf 03: klickbares Bedienkonzept mit bearbeitbarem Projektgraphen und durchgehender, vollbreiter To-do-Liste. Die eigentliche React-App mit Anmeldung und Datenbank folgt erst nach dem Review. Die Weckerfunktion bleibt der späteren nativen App vorbehalten.
 
 ### Bedienkonzept ausprobieren
 
@@ -13,7 +13,7 @@ corepack pnpm dev
 
 Anschließend [die lokale Vorschau](http://127.0.0.1:4173) öffnen. Voraussetzung: Node.js ab Version 22 und Corepack. Ohne Paketinstallation lässt sich die Vorschau auch direkt mit `node prototype/server.mjs` starten.
 
-**Zum Review:** Über das Plus bei „Meine Projekte“ oder „Neues Projekt“ ein Projekt mit Namen und eigenem Bild anlegen. Ein To-do einem Projekt zuordnen und im Popup mehrere Vorgänger/Nachfolger auswählen. Im Graphen Knoten ziehen, seitliche Verbindungspunkte ziehen oder nacheinander anklicken, am Knoten-Plus einen Folgeschritt ergänzen und „Autoformatieren“ ausprobieren. Im Arbeitsbereich zwischen Spalten und echten To-do-Zeilen wechseln und in beide Richtungen weiterscrollen. Unter „Entwurf 02“ stehen die Review-Fragen.
+**Zum Review:** Über das Plus bei „Meine Projekte“ oder „Neues Projekt“ ein Projekt mit Namen und eigenem Bild anlegen. Ein To-do einem Projekt zuordnen und im Popup mehrere Vorgänger/Nachfolger auswählen. Im Graphen Knoten ziehen, seitliche Verbindungspunkte ziehen oder nacheinander anklicken, am Knoten-Plus einen Folgeschritt ergänzen und „Autoformatieren“ ausprobieren. Im Arbeitsbereich zwischen Spalten und echten To-do-Zeilen wechseln und in beide Richtungen weiterscrollen. Unter „Entwurf 03“ stehen die Review-Fragen.
 
 Der separate Prototyp unter `prototype/` verwendet HTML, CSS und JavaScript ohne Browser-Laufzeitabhängigkeiten. Er ersetzt nicht die geplante React-/React-Native-Architektur. Alle Inhalte sind Beispieldaten; Änderungen und eigene Projektbilder bleiben nur bis zum Neuladen erhalten. Bilder werden ausschließlich lokal verarbeitet (PNG/JPG/WebP, maximal 5 MB). Anmeldung, dauerhafte Speicherung, Verschieben zwischen Tagen und Outlook-Synchronisierung sind noch nicht umgesetzt.
 
@@ -23,8 +23,8 @@ Prüfung: `corepack pnpm test` für die Modelltests und `corepack pnpm test:ui` 
 
 | Ansicht | Geplantes Verhalten |
 | --- | --- |
-| **Dein Arbeitsbereich / Homepage** | „Ohne Termin“ steht oberhalb der nächsten Tage. **Horizontal:** eine Spalte pro Tag, kontinuierlich in beide Richtungen scrollen, ohne Wochenwechsel. **Vertikal:** eine kompakte Zeile je To-do, zusammengefasst in einer größeren Tagesgruppe; weitere Tage folgen beim Scrollen. Sortieren und Verschieben auf andere Tage folgen in der produktiven App. |
-| **Projekte** | Projekte über das Plus in der Sidebar oder in der Projektübersicht mit Namen und eigenem Bild anlegen. Keine Prozentwerte oder Fortschrittsbalken. Ein Projekt öffnet seinen Graphen mit mehreren Startpunkten, Verzweigungen und zusammenlaufenden Pfaden. Knoten sind frei verschiebbar, Pfeile bewegen sich mit; „Autoformatieren“ stellt eine geordnete Darstellung wieder her. |
+| **Dein Arbeitsbereich / Homepage** | „Ohne Termin“ steht oberhalb der nächsten Tage. **Horizontal:** eine Spalte pro Tag, kontinuierlich in beide Richtungen scrollen, ohne Wochenwechsel. **Vertikal:** eine durchgehende Liste über die gesamte verfügbare Breite, mit dem Datum als Zwischenüberschrift und einer kompakten Zeile je To-do, ohne eingerahmte Tageskarten. Weitere Tage folgen beim Scrollen. Sortieren und Verschieben auf andere Tage folgen in der produktiven App. |
+| **Projekte** | Projekte über das Plus in der Sidebar oder in der Projektübersicht mit Namen und eigenem Bild anlegen. Keine Prozentwerte oder Fortschrittsbalken. Ein Projekt öffnet seinen Graphen mit mehreren Startpunkten, Verzweigungen und zusammenlaufenden Pfaden. Knoten sind frei verschiebbar, Pfeile bewegen sich mit. „Autoformatieren“ ändert ausschließlich die Anordnung, fügt keine Verbindungen hinzu und entfernt keine. Noch aktive Zieh-/Zeichengesten werden vorher abgebrochen. |
 | **Kalender** | Monatsübersicht mit Fälligkeiten und denselben Aufgabendetails. Fließender Wechsel zur Tagesplanung: ausgewähltes Datum, Terminbezug und Projektfilter bleiben erhalten. |
 
 **Die Eisenhower-Matrix befindet sich im Dialog des einzelnen To-dos.** Der Ablauf:

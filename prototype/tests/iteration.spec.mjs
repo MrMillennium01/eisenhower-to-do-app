@@ -6,6 +6,9 @@ const screenshots = fileURLToPath(new URL('../../.artifacts/review/', import.met
 const graph = async (page) => page.locator('.sidebar-project[data-id="portfolio"]').click();
 const port = (page, id, direction) => page.locator(`.graph-port[data-id="${id}"][data-port="${direction}"]`);
 const edge = (page, from, to) => page.locator(`.graph-edge[data-from="${from}"][data-to="${to}"]`);
+const edgeSnapshot = (page) => page.locator('.graph-edge').evaluateAll((nodes) => nodes.map((node) => ({
+  from: node.dataset.from, to: node.dataset.to, optional: node.classList.contains('optional-edge'),
+})).sort((a, b) => `${a.from}:${a.to}`.localeCompare(`${b.from}:${b.to}`)));
 const imageBuffer = async (page) => Buffer.from(await page.evaluate(() => {
   const canvas = document.createElement('canvas');
   canvas.width = 160;
@@ -40,7 +43,7 @@ test('home is renamed and undated tasks precede both timeline layouts', async ({
 
 test('list groups one compact single-line row per task under each day', async ({ page }) => {
   await page.locator('[data-layout="list"][data-action="layout"]').click();
-  const today = page.locator('.agenda .day-column.is-today');
+  const today = page.locator('.agenda-day.is-today');
   await expect(today.locator('.task-row')).toHaveCount(4);
   await expect(today.locator('.task-card')).toHaveCount(0);
   const sizes = await today.locator('.task-row').evaluateAll((rows) => rows.map((row) => {
@@ -79,10 +82,10 @@ test('vertical scrolling extends the list in both directions', async ({ page }) 
   const start = await timeline.getAttribute('data-start');
   await timeline.evaluate((element) => { element.scrollTop = 0; });
   await expect(timeline).not.toHaveAttribute('data-start', start);
-  const offset = await page.locator(`.day-column[data-date="${start}"]`).evaluate((element) => element.getBoundingClientRect().top - element.parentElement.getBoundingClientRect().top);
+  const offset = await page.locator(`.agenda-day[data-date="${start}"]`).evaluate((element) => element.getBoundingClientRect().top - element.parentElement.getBoundingClientRect().top);
   expect(Math.abs(offset)).toBeLessThan(4);
   await page.getByRole('button', { name: 'Zu heute', exact: true }).click();
-  const today = await page.locator('.day-column.is-today').getAttribute('data-date');
+  const today = await page.locator('.agenda-day.is-today').getAttribute('data-date');
   await expect(timeline).toHaveAttribute('data-anchor-date', today);
 });
 
@@ -268,9 +271,9 @@ test('mobile list stays row-based and project and placement dialogs remain usabl
   await page.goto('http://127.0.0.1:4173');
   await page.locator('[data-layout="list"][data-action="layout"]').tap();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-  const rows = await page.locator('.agenda .day-column.is-today .task-row').evaluateAll((nodes) => nodes.map((node) => node.getBoundingClientRect().height));
+  const rows = await page.locator('.agenda-day.is-today .task-row').evaluateAll((nodes) => nodes.map((node) => node.getBoundingClientRect().height));
   expect(rows.every((height) => height <= 60)).toBe(true);
-  const widths = await page.locator('.agenda .day-column.is-today').evaluate((node) => ({
+  const widths = await page.locator('.agenda-day.is-today').evaluate((node) => ({
     day: node.getBoundingClientRect().width, container: node.parentElement.clientWidth,
   }));
   expect(widths.day).toBeGreaterThanOrEqual(widths.container - 8);
@@ -321,4 +324,74 @@ test('keyboard node movement and nested modal focus work without losing drafts',
   await expect(page.locator('#edit-placement')).toBeFocused();
   await page.keyboard.press('Escape');
   await expect(page.locator('#task-dialog')).not.toBeVisible();
+});
+
+test('list is flat and full-width at every breakpoint, without day cards', async ({ page }) => {
+  for (const width of [1920, 1440, 1024, 820, 390]) {
+    await page.setViewportSize({ width, height: 1000 });
+    await page.goto('/');
+    await page.locator('[data-action="layout"][data-layout="list"]').click();
+    const layout = await page.locator('.agenda > section.is-today').evaluate((day) => {
+      const style = getComputedStyle(day);
+      return {
+        width: day.getBoundingClientRect().width, available: day.parentElement.clientWidth,
+        rowWidths: [...day.querySelectorAll('.task-row')].map((row) => row.getBoundingClientRect().width),
+        border: style.borderLeftWidth, radius: style.borderRadius, shadow: style.boxShadow,
+        margin: style.marginBottom, header: day.querySelector('header h3').textContent,
+      };
+    });
+    expect(layout.width).toBeGreaterThanOrEqual(layout.available - 10);
+    expect(layout.border).toBe('0px');
+    expect(layout.radius).toBe('0px');
+    expect(layout.shadow).toBe('none');
+    expect(layout.margin).toBe('0px');
+    expect(layout.header).not.toBe('');
+    for (const width of layout.rowWidths) expect(width).toBeCloseTo(layout.width, 0);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  }
+});
+
+for (const action of ['auto-format', 'Escape']) {
+  test(`${action} interrupts an active connection before release without adding arrows`, async ({ page }) => {
+    await graph(page);
+    const before = await edgeSnapshot(page);
+    const source = await port(page, 'content', 'out').boundingBox();
+    await page.mouse.move(source.x + source.width / 2, source.y + source.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(source.x + 45, source.y + 35, { steps: 4 });
+    if (action === 'auto-format') {
+      await page.getByRole('button', { name: 'Autoformatieren' }).focus();
+      await page.keyboard.press('Enter');
+    } else {
+      await page.keyboard.press('Escape');
+    }
+    const target = await port(page, 'animation', 'in').boundingBox();
+    await page.mouse.move(target.x + target.width / 2, target.y + target.height / 2, { steps: 4 });
+    await page.mouse.up();
+    expect(await edgeSnapshot(page)).toEqual(before);
+    await expect(page.locator('#connection-preview')).not.toBeVisible();
+  });
+}
+
+test('auto-format preserves the exact edited connections and task contents', async ({ page }) => {
+  await graph(page);
+  await port(page, 'content', 'out').click();
+  await port(page, 'animation', 'in').click();
+  await edge(page, 'vision', 'content').locator('.edge-hit').focus();
+  await page.keyboard.press('Enter');
+  await page.getByRole('button', { name: 'Verbindung entfernen' }).click();
+  const before = await edgeSnapshot(page);
+  const tasks = () => page.locator('.graph-node').evaluateAll((nodes) => nodes.map((node) => ({
+    id: node.dataset.id, text: node.textContent, state: node.className,
+  })));
+  const beforeTasks = await tasks();
+  await page.locator('.graph-node[data-id="moodboard"] .graph-node-drag').focus();
+  await page.keyboard.press('Shift+ArrowDown');
+  for (let index = 0; index < 3; index++) {
+    await page.getByRole('button', { name: 'Autoformatieren' }).click();
+    expect(await edgeSnapshot(page)).toEqual(before);
+    expect(await tasks()).toEqual(beforeTasks);
+  }
+  await expect(edge(page, 'vision', 'content')).toHaveCount(0);
+  await expect(edge(page, 'content', 'animation')).toHaveCount(1);
 });

@@ -136,3 +136,21 @@ test('continuous day ranges cross month boundaries without missing or duplicatin
   assert.equal(days.at(-1), '2026-11-04');
   assert.deepEqual(dateRange('2026-10-25', '2026-10-24'), []);
 });
+
+test('auto-layout only returns positions and never writes to tasks or edited edges', () => {
+  const demo = createDemo('2026-10-20');
+  const tasks = Object.freeze(demo.tasks.filter((task) => task.projectId === 'portfolio').map((task) =>
+    Object.freeze({ ...task, graph: Object.freeze({ x: 500, y: 800 }) }),
+  ));
+  const edges = Object.freeze([
+    ...demo.dependencies.filter((edge) => !(edge.from === 'vision' && edge.to === 'content')),
+    { from: 'content', to: 'animation', required: false },
+  ].map((edge) => Object.freeze(edge)));
+  const before = structuredClone({ tasks, edges });
+  for (let index = 0; index < 3; index++) {
+    const positions = autoLayout(tasks, edges);
+    assert.deepEqual(Object.keys(positions).sort(), tasks.map((task) => task.id).sort());
+    for (const point of Object.values(positions)) assert.deepEqual(Object.keys(point).sort(), ['x', 'y']);
+    assert.deepEqual({ tasks, edges }, before);
+  }
+});

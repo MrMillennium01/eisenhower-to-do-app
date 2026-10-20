@@ -180,7 +180,7 @@ test('calendar-to-agenda navigation retains date basis and project filter', asyn
   await expect(page.locator('.agenda')).toBeVisible();
   await expect(page.locator('#date-basis')).toHaveValue('dueDate');
   await expect(page.locator('#project-filter')).toHaveValue('portfolio');
-  const today = await page.locator('.day-column.is-today').getAttribute('data-date');
+  const today = await page.locator('.agenda-day.is-today').getAttribute('data-date');
   await expect(page.locator('.agenda')).toHaveAttribute('data-anchor-date', today);
 });
 
