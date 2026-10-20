@@ -21,5 +21,12 @@
 - Keine Anmeldung, externen Laufzeitanfragen oder dauerhafte Speicherung. Beispieldaten werden beim Neuladen zurückgesetzt.
 - Alle Ansichten bearbeiten denselben In-Memory-Aufgabenbestand. Dialogänderungen werden erst beim Speichern übernommen.
 - Nutzereingaben vor dem Einsetzen in HTML maskieren; Formularwerte über DOM-Eigenschaften setzen.
-- Reine Datums-, Prioritäts- und Fortschrittsfunktionen liegen in `prototype/model.mjs` und werden mit `node:test` geprüft.
-- Projektverbindungen und Layoutpositionen sind im Prototyp vorgegeben. Die Produktarchitektur bleibt in der README dokumentiert.
+- Reine Datums-, Prioritäts- und Graphfunktionen liegen in `prototype/model.mjs` und werden mit `node:test` geprüft.
+- Der Graph ist im Prototyp bearbeitbar: mehrere ein-/ausgehende Verbindungen, frei verschiebbare Knoten, Autoformatierung und Folgeschritt-Plus. Selbstverbindungen, Duplikate, Projektgrenzen und Kreise werden geprüft.
+- Die Einordnung eines To-dos wird in einem separaten Popup vorbereitet und erst zusammen mit dem To-do gespeichert. Abbrechen darf keine Aufgaben oder Verbindungen hinterlassen.
+- Keine Projekt-Prozentwerte oder Fortschrittsbalken: Der Benutzer möchte keine aus Aufgabenanzahlen abgeleitete Fortschrittsmetrik.
+- Die Homepage heißt „Dein Arbeitsbereich“. „Ohne Termin“ steht oben. In der Listenansicht ist jedes To-do genau eine kompakte Zeile innerhalb einer Tagesgruppe.
+- Tage werden beim Scrollen in beide Richtungen ergänzt; beim Voranstellen muss die sichtbare Position erhalten bleiben.
+- Eigene Projektbilder werden nur lokal als kurzlebige Blob-URLs verarbeitet. PNG/JPG/WebP, maximal 5 MB, Dateisignatur und Dekodierung prüfen; verworfene URLs freigeben.
+- Outlook ist ausschließlich eine spätere Anbieter-Schnittstelle im Architekturplan, noch keine echte Kalender- oder Mailverbindung.
+- Zusätzliche Browserfälle für Entwurf 02 liegen in `prototype/tests/iteration.spec.mjs`. Die Produktarchitektur bleibt in der README dokumentiert.

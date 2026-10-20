@@ -58,17 +58,103 @@ export function taskState(task, tasks, dependencies) {
   return blocked ? 'blocked' : task.status;
 }
 
-export function projectProgress(tasks, projectId) {
-  const required = tasks.filter((task) => task.projectId === projectId && !task.optional);
-  const completed = required.filter((task) => task.status === 'done').length;
-  return { completed, total: required.length, percent: required.length ? Math.round((completed / required.length) * 100) : 0 };
+export function dateRange(start, end) {
+  const days = [];
+  for (let day = start; day <= end; day = addDays(day, 1)) days.push(day);
+  return days;
+}
+
+export function connectionError(tasks, edges, from, to) {
+  if (from === to) return 'Ein To-do kann nicht mit sich selbst verbunden werden.';
+  const source = tasks.find((task) => task.id === from);
+  const target = tasks.find((task) => task.id === to);
+  if (!source || !target) return 'Bitte zwei vorhandene To-dos auswählen.';
+  if (!source.projectId || source.projectId !== target.projectId) return 'Verbindungen sind nur innerhalb desselben Projekts möglich.';
+  if (edges.some((edge) => edge.from === from && edge.to === to)) return 'Diese Verbindung gibt es bereits.';
+  const pending = [to];
+  const visited = new Set();
+  while (pending.length) {
+    const id = pending.pop();
+    if (id === from) return 'Diese Verbindung würde einen Kreis erzeugen.';
+    if (visited.has(id)) continue;
+    visited.add(id);
+    pending.push(...edges.filter((edge) => edge.from === id).map((edge) => edge.to));
+  }
+  return '';
+}
+
+export function reconnectTask(tasks, edges, task, parents, children) {
+  const candidates = [...tasks.filter((item) => item.id !== task.id), task];
+  const result = edges.filter((edge) => edge.from !== task.id && edge.to !== task.id);
+  const links = [
+    ...[...new Set(parents)].map((from) => ({ from, to: task.id })),
+    ...[...new Set(children)].map((to) => ({ from: task.id, to })),
+  ];
+  for (const link of links) {
+    const error = connectionError(candidates, result, link.from, link.to);
+    if (error) return { edges, error };
+    const source = candidates.find((item) => item.id === link.from);
+    const target = candidates.find((item) => item.id === link.to);
+    const previous = edges.find((edge) => edge.from === link.from && edge.to === link.to);
+    result.push({ ...link, required: source.optional && !target.optional ? false : previous?.required ?? true });
+  }
+  return { edges: result, error: '' };
+}
+
+export const NODE_WIDTH = 210;
+export const NODE_HEIGHT = 132;
+
+export function autoLayout(tasks, edges) {
+  const ids = new Set(tasks.map((task) => task.id));
+  const links = edges.filter((edge) => ids.has(edge.from) && ids.has(edge.to));
+  const incoming = new Map(tasks.map((task) => [task.id, links.filter((edge) => edge.to === task.id).length]));
+  const ranks = new Map(tasks.map((task) => [task.id, 0]));
+  const queue = tasks.filter((task) => incoming.get(task.id) === 0).map((task) => task.id);
+  let processed = 0;
+  while (queue.length) {
+    const id = queue.shift();
+    processed++;
+    for (const edge of links.filter((item) => item.from === id)) {
+      ranks.set(edge.to, Math.max(ranks.get(edge.to), ranks.get(id) + 1));
+      incoming.set(edge.to, incoming.get(edge.to) - 1);
+      if (incoming.get(edge.to) === 0) queue.push(edge.to);
+    }
+  }
+  if (processed !== tasks.length) throw new Error('Der Graph enthält einen Kreis.');
+  const columns = new Map();
+  for (const task of tasks) {
+    const rank = ranks.get(task.id);
+    if (!columns.has(rank)) columns.set(rank, []);
+    columns.get(rank).push(task.id);
+  }
+  const rows = Math.max(1, ...[...columns.values()].map((column) => column.length));
+  return Object.fromEntries([...columns].flatMap(([rank, column]) =>
+    column.map((id, row) => [id, { x: 60 + rank * 280, y: 60 + (rows - column.length) * 94 + row * 188 }]),
+  ));
+}
+
+export function graphPositions(tasks, edges) {
+  const automatic = autoLayout(tasks, edges);
+  return Object.fromEntries(tasks.map((task) => [task.id, task.graph || automatic[task.id]]));
+}
+
+export function graphBounds(positions) {
+  return {
+    width: Math.max(980, ...Object.values(positions).map(({ x }) => x + NODE_WIDTH + 90)),
+    height: Math.max(470, ...Object.values(positions).map(({ y }) => y + NODE_HEIGHT + 70)),
+  };
+}
+
+export function edgePath(from, to) {
+  const reach = Math.max(45, Math.abs(to.x - from.x) / 2);
+  return `M${from.x} ${from.y}C${from.x + reach} ${from.y},${to.x - reach} ${to.y},${to.x} ${to.y}`;
 }
 
 export function createDemo(today) {
   const projects = [
-    { id: 'portfolio', name: 'Portfolio-Website', tone: 'forest', icon: 'window', description: 'Ein neuer Auftritt für neue Möglichkeiten.' },
-    { id: 'balance', name: 'Mehr Balance', tone: 'ochre', icon: 'leaf', description: 'Kleine Schritte, die im Alltag guttun.' },
-    { id: 'everyday', name: 'Alltag & Ideen', tone: 'lilac', icon: 'sparkle', description: 'Platz für alles, was sonst noch zählt.' },
+    { id: 'portfolio', name: 'Portfolio-Website', tone: 'forest', imageUrl: '', description: 'Ein neuer Auftritt für neue Möglichkeiten.' },
+    { id: 'balance', name: 'Mehr Balance', tone: 'ochre', imageUrl: '', description: 'Kleine Schritte, die im Alltag guttun.' },
+    { id: 'everyday', name: 'Alltag & Ideen', tone: 'lilac', imageUrl: '', description: 'Platz für alles, was sonst noch zählt.' },
   ];
   const task = (id, title, projectId, plannedOffset, dueOffset, urgency, importance, extra = {}) => ({
     id, title, projectId,

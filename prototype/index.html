@@ -38,6 +38,10 @@
               <span>Projekt</span>
               <select id="task-project" name="project"></select>
             </label>
+            <div id="task-placement" class="task-placement" hidden>
+              <div><strong>Platz im Projektbaum</strong><span id="task-placement-summary"></span></div>
+              <button id="edit-placement" class="text-button" type="button">Einordnung ändern</button>
+            </div>
             <div class="field-row">
               <label class="field">
                 <span>Geplant für</span>
@@ -90,7 +94,7 @@
           </section>
         </div>
         <footer class="dialog-footer">
-          <p>Ein To-do, überall derselbe Stand.<br><span>Im Entwurf nur bis zum Neuladen gespeichert.</span></p>
+          <div class="dialog-footer-message"><p>Ein To-do, überall derselbe Stand.</p><span>Im Entwurf nur bis zum Neuladen gespeichert.</span><p id="task-error" class="form-error" role="alert"></p></div>
           <div>
             <button class="button button-quiet close-dialog" type="button">Abbrechen</button>
             <button id="save-task" class="button button-primary" type="submit">To-do erstellen</button>
@@ -98,17 +102,56 @@
         </footer>
       </form>
     </dialog>
+    <dialog id="placement-dialog" class="placement-dialog" aria-labelledby="placement-heading">
+      <header class="dialog-header">
+        <div><div class="eyebrow">PLATZ IM PROJEKTBAUM</div><h2 id="placement-heading">Wo gehört dein To-do hin?</h2><p id="placement-project-name"></p></div>
+        <button class="icon-button close-placement" type="button" aria-label="Einordnung schließen">×</button>
+      </header>
+      <div class="placement-body">
+        <p class="placement-intro">Wähle im Graphen, was davor und was danach kommt. Mehrere Verbindungen sind möglich.</p>
+        <div class="placement-toolbar">
+          <div class="placement-roles" role="group" aria-label="Verbindungsrichtung">
+            <button type="button" data-role="parents" aria-pressed="true">1 · Vorgänger wählen</button>
+            <button type="button" data-role="children" aria-pressed="false">2 · Nachfolger wählen</button>
+          </div>
+          <button id="placement-root" class="text-button" type="button">Als eigenen Startpunkt</button>
+        </div>
+        <div id="placement-graph" class="placement-scroll" tabindex="0" aria-label="To-dos für die Einordnung auswählen"></div>
+        <div id="placement-summary" class="placement-summary" aria-live="polite"></div>
+        <p class="placement-note">Die Pfeile bedeuten „kommt vor“. Ein Startpunkt braucht keine Vorgänger. Andere vorhandene Verbindungen bleiben erhalten.</p>
+        <p id="placement-error" class="form-error" role="alert"></p>
+      </div>
+      <footer class="dialog-footer"><button class="button button-quiet close-placement" type="button">Zurück</button><button id="apply-placement" class="button button-primary" type="button">Einordnung übernehmen</button></footer>
+    </dialog>
+    <dialog id="project-dialog" class="project-dialog" aria-labelledby="project-heading">
+      <form id="project-form">
+        <header class="dialog-header"><div><div class="eyebrow">RAUM FÜR DEIN VORHABEN</div><h2 id="project-heading">Neues Projekt</h2></div><button class="icon-button close-project" type="button" aria-label="Projektdialog schließen">×</button></header>
+        <div class="project-form-body">
+          <label class="field"><span>Projektname <span class="required-hint">Pflichtfeld</span></span><input id="project-name" type="text" maxlength="80" required placeholder="Was möchtest du auf den Weg bringen?" autocomplete="off"></label>
+          <label class="field"><span>Ein Satz dazu <span class="optional-hint">optional</span></span><textarea id="project-description" rows="2" maxlength="280" placeholder="Was macht dieses Vorhaben aus?"></textarea></label>
+          <div class="field"><span>Dein Projektbild <span class="optional-hint">optional</span></span><div id="project-image-preview" class="project-image-preview"></div>
+            <div class="image-actions"><button id="pick-project-image" class="button button-quiet" type="button">Eigenes Bild auswählen</button><button id="remove-project-image" class="text-button" type="button">Bild entfernen</button></div>
+            <input id="project-image-file" type="file" accept="image/png,image/jpeg,image/webp" hidden>
+            <p class="field-note">PNG, JPG oder WebP · bis 5 MB · bleibt nur auf diesem Gerät in dieser Sitzung.</p>
+            <p id="image-error" class="form-error" role="alert"></p>
+          </div>
+          <label class="field"><span>Projektfarbe</span><select id="project-tone"><option value="forest">Waldgrün</option><option value="ochre">Sand</option><option value="lilac">Flieder</option></select></label>
+          <p id="project-error" class="form-error" role="alert"></p>
+        </div>
+        <footer class="dialog-footer"><button class="button button-quiet close-project" type="button">Abbrechen</button><button id="save-project" class="button button-primary" type="submit">Projekt anlegen</button></footer>
+      </form>
+    </dialog>
     <dialog id="review-dialog" class="review-dialog" aria-labelledby="review-heading">
       <div class="eyebrow">SCHRITT 01 · DEIN FEEDBACK</div>
       <h2 id="review-heading">Wie fühlt sich der Ablauf an?</h2>
       <p>Das ist ein klickbares Bedienkonzept mit Beispieldaten, noch keine fertige App. Änderungen verschwinden beim Neuladen.</p>
       <ol>
-        <li><strong>Ein neues To-do anlegen.</strong><span>Findest du alle Angaben dort, wo du sie erwartest?</span></li>
-        <li><strong>Seinen Platz in der Matrix finden.</strong><span>Sind die Achsen und das Verschieben verständlich?</span></li>
-        <li><strong>Speichern, öffnen, neu priorisieren.</strong><span>Passt die Lightbox für diesen wiederkehrenden Ablauf?</span></li>
-        <li><strong>Die Perspektive wechseln.</strong><span>Spalten oder Liste? Fühlt sich der Weg zum Projekt und Kalender stimmig an?</span></li>
+        <li><strong>Dein eigenes Projekt anlegen.</strong><span>Name und eigenes Bild wählen – ohne Fortschrittsbalken.</span></li>
+        <li><strong>Ein To-do im Graphen einordnen.</strong><span>Projekt auswählen, Vorgänger und Nachfolger markieren, speichern.</span></li>
+        <li><strong>Den Projektbaum gestalten.</strong><span>Knoten verschieben, Pfeile zeichnen, mit Plus einen Folgeschritt ergänzen und autoformatieren.</span></li>
+        <li><strong>Im Arbeitsbereich weiterscrollen.</strong><span>Ohne Termin steht oben. Darunter folgen fortlaufende Tage mit Karten oder kompakten Zeilen.</span></li>
       </ol>
-      <div class="review-note">Noch nicht enthalten: Anmeldung, dauerhafte Speicherung, freies Bearbeiten der Projektverbindungen und Verschieben zwischen Tagen. Die Web-App bekommt keinen Wecker.</div>
+      <div class="review-note">Noch nicht enthalten: Anmeldung, dauerhafte Speicherung, Verschieben zwischen Tagen und Outlook-Synchronisierung. Die Web-App bekommt keinen Wecker.</div>
       <button id="close-review" class="button button-primary" type="button">Los geht’s</button>
     </dialog>
     <div id="toast" role="status" aria-live="polite" class="toast"></div>

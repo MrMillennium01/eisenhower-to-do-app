@@ -3,7 +3,7 @@ import { mkdir } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 
 const screenshots = fileURLToPath(new URL('../../.artifacts/review/', import.meta.url));
-const openMoodboard = (page) => page.locator('.task-card[data-task-id="moodboard"] .task-open').click();
+const openMoodboard = (page) => page.locator('[data-task-id="moodboard"] .task-open').click();
 const dialog = (page) => page.locator('#task-dialog');
 
 test.beforeEach(async ({ page }) => {
@@ -19,7 +19,7 @@ test('loads an isolated prototype without runtime errors or external requests', 
   });
   await page.reload();
   await expect(page.getByRole('heading', { name: 'Dein nächster Schritt.' })).toBeVisible();
-  await expect(page.locator('.day-column')).toHaveCount(7);
+  await expect(page.locator('.day-column')).toHaveCount(42);
   await expect(page.locator('.board-scroll')).toBeVisible();
   expect(errors).toEqual([]);
   expect(external).toEqual([]);
@@ -31,6 +31,7 @@ test('creates, reopens, and edits a task through the shared dialog', async ({ pa
   await page.getByLabel('Was möchtest du angehen?', { exact: false }).fill('Mein nächster Testschritt');
   await page.locator('#task-description').fill('Eine Notiz für das Review.');
   await page.locator('#task-project').selectOption('portfolio');
+  await page.locator('#apply-placement').click();
   await page.locator('#task-urgency').fill('22');
   await page.locator('#task-importance').fill('91');
   await page.getByRole('button', { name: 'To-do erstellen', exact: true }).click();
@@ -74,7 +75,7 @@ test('saved priorities are reflected in agenda, project graph, and calendar', as
   await page.locator('#task-importance').fill('93');
   await page.getByRole('button', { name: 'Änderungen speichern' }).click();
   await page.getByRole('button', { name: 'Liste', exact: true }).click();
-  await expect(page.locator('.task-card[data-task-id="moodboard"]')).toContainText('Einplanen');
+  await expect(page.locator('[data-task-id="moodboard"]')).toContainText('Einplanen');
   await page.locator('.sidebar-project[data-id="portfolio"]').click();
   await page.locator('.graph-node[data-id="moodboard"]').click();
   await expect(page.locator('#task-urgency')).toHaveValue('9');
@@ -161,14 +162,14 @@ test('switching layouts and date basis does not mutate dates', async ({ page }) 
 
 test('adding from a deadline column sets that deadline, not an unrelated workday', async ({ page }) => {
   await page.locator('#date-basis').selectOption('dueDate');
-  const addButton = page.locator('.day-column').nth(1).locator('.add-day');
+  const addButton = page.locator('.day-column.is-today + .day-column .add-day');
   const expectedDate = await addButton.getAttribute('data-date');
   await addButton.click();
   await expect(page.locator('#task-due')).toHaveValue(expectedDate);
   await expect(page.locator('#task-planned')).toHaveValue('');
   await page.locator('#task-title').fill('Eine feste Frist');
   await page.getByRole('button', { name: 'To-do erstellen', exact: true }).click();
-  await expect(page.locator('.day-column').nth(1)).toContainText('Eine feste Frist');
+  await expect(page.locator(`.day-column[data-date="${expectedDate}"]`)).toContainText('Eine feste Frist');
 });
 
 test('calendar-to-agenda navigation retains date basis and project filter', async ({ page }) => {
@@ -179,7 +180,8 @@ test('calendar-to-agenda navigation retains date basis and project filter', asyn
   await expect(page.locator('.agenda')).toBeVisible();
   await expect(page.locator('#date-basis')).toHaveValue('dueDate');
   await expect(page.locator('#project-filter')).toHaveValue('portfolio');
-  await expect(page.locator('.day-column').first()).toHaveClass(/is-today/);
+  const today = await page.locator('.day-column.is-today').getAttribute('data-date');
+  await expect(page.locator('.agenda')).toHaveAttribute('data-anchor-date', today);
 });
 
 test('demo changes reset on reload instead of persisting personal data', async ({ page }) => {
@@ -210,7 +212,7 @@ test('desktop review screenshots', async ({ page }) => {
   await mkdir(screenshots, { recursive: true });
   await page.screenshot({ path: `${screenshots}/01-tagesplanung.png`, fullPage: true });
   await openMoodboard(page);
-  await page.screenshot({ path: `${screenshots}/02-prioritaetsdialog.png`, fullPage: true });
+  await page.screenshot({ path: `${screenshots}/02-prioritaetsdialog.png` });
   await page.getByRole('button', { name: 'Abbrechen', exact: true }).click();
   await page.getByRole('button', { name: 'Liste', exact: true }).click();
   await page.screenshot({ path: `${screenshots}/03-tagesliste.png`, fullPage: true });

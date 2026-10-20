@@ -2,7 +2,7 @@
 
 Eine Web-App für Prioritäten, Tagesplanung und Projektfortschritt, vorbereitet für eine spätere App mit React Native. Aufgaben erscheinen als verschiebbare Bausteine. Jede Aufgabe wird nur einmal gespeichert: Änderungen sind in allen Ansichten sichtbar.
 
-**Stand:** Schritt 1 ist als klickbares Bedienkonzept umgesetzt. Die eigentliche React-App mit Anmeldung und Datenbank folgt erst nach dem Review. Die Weckerfunktion bleibt der späteren nativen App vorbehalten.
+**Stand:** Schritt 1, Entwurf 02: klickbares Bedienkonzept mit bearbeitbarem Projektgraphen. Die eigentliche React-App mit Anmeldung und Datenbank folgt erst nach dem Review. Die Weckerfunktion bleibt der späteren nativen App vorbehalten.
 
 ### Bedienkonzept ausprobieren
 
@@ -13,9 +13,9 @@ corepack pnpm dev
 
 Anschließend [die lokale Vorschau](http://127.0.0.1:4173) öffnen. Voraussetzung: Node.js ab Version 22 und Corepack. Ohne Paketinstallation lässt sich die Vorschau auch direkt mit `node prototype/server.mjs` starten.
 
-**Zum Review:** Ein To-do erstellen, seinen Punkt in der Matrix verschieben, speichern und erneut öffnen. Danach Prioritäten ändern oder mit „Abbrechen“ verwerfen und zwischen Spalten, Liste, Projektbaum und Kalender wechseln. Unter „Entwurf 01“ stehen die Review-Fragen.
+**Zum Review:** Über das Plus bei „Meine Projekte“ oder „Neues Projekt“ ein Projekt mit Namen und eigenem Bild anlegen. Ein To-do einem Projekt zuordnen und im Popup mehrere Vorgänger/Nachfolger auswählen. Im Graphen Knoten ziehen, seitliche Verbindungspunkte ziehen oder nacheinander anklicken, am Knoten-Plus einen Folgeschritt ergänzen und „Autoformatieren“ ausprobieren. Im Arbeitsbereich zwischen Spalten und echten To-do-Zeilen wechseln und in beide Richtungen weiterscrollen. Unter „Entwurf 02“ stehen die Review-Fragen.
 
-Der separate Prototyp unter `prototype/` verwendet HTML, CSS und JavaScript ohne Browser-Laufzeitabhängigkeiten. Er legt die spätere React-/React-Native-Architektur nicht fest. Alle Inhalte sind Beispieldaten; Änderungen bleiben nur bis zum Neuladen erhalten. Anmeldung, dauerhafte Speicherung, Verschieben zwischen Tagen, freie Graphbearbeitung und Projekteinstellungen sind noch nicht umgesetzt.
+Der separate Prototyp unter `prototype/` verwendet HTML, CSS und JavaScript ohne Browser-Laufzeitabhängigkeiten. Er ersetzt nicht die geplante React-/React-Native-Architektur. Alle Inhalte sind Beispieldaten; Änderungen und eigene Projektbilder bleiben nur bis zum Neuladen erhalten. Bilder werden ausschließlich lokal verarbeitet (PNG/JPG/WebP, maximal 5 MB). Anmeldung, dauerhafte Speicherung, Verschieben zwischen Tagen und Outlook-Synchronisierung sind noch nicht umgesetzt.
 
 Prüfung: `corepack pnpm test` für die Modelltests und `corepack pnpm test:ui` für die Browserabläufe. Der folgende Plan beschreibt weiterhin die vollständige spätere App.
 
@@ -23,8 +23,8 @@ Prüfung: `corepack pnpm test` für die Modelltests und `corepack pnpm test:ui` 
 
 | Ansicht | Geplantes Verhalten |
 | --- | --- |
-| **Demnächst / Nächste Schritte** | Aufgaben nach Arbeitstag mit Wochentag und Datum, etwa „Mittwoch, 21.10.“. **Horizontal:** eine Spalte pro Tag, seitwärts scrollen. **Vertikal:** ein Abschnitt pro Tag, eine Zeile pro Aufgabe, nach unten scrollen. Aufgaben innerhalb eines Tages sortieren oder auf andere Tage ziehen. |
-| **Projekte** | Projektblöcke öffnen einen bearbeitbaren Progressionsbaum wie in einem Spiel: mehrere Startpunkte, Verzweigungen und zusammenlaufende Pfade. Aufgaben sind Knoten, Abhängigkeiten sind Verbindungen. Erledigte, verfügbare, blockierte und optionale Schritte sind erkennbar. |
+| **Dein Arbeitsbereich / Homepage** | „Ohne Termin“ steht oberhalb der nächsten Tage. **Horizontal:** eine Spalte pro Tag, kontinuierlich in beide Richtungen scrollen, ohne Wochenwechsel. **Vertikal:** eine kompakte Zeile je To-do, zusammengefasst in einer größeren Tagesgruppe; weitere Tage folgen beim Scrollen. Sortieren und Verschieben auf andere Tage folgen in der produktiven App. |
+| **Projekte** | Projekte über das Plus in der Sidebar oder in der Projektübersicht mit Namen und eigenem Bild anlegen. Keine Prozentwerte oder Fortschrittsbalken. Ein Projekt öffnet seinen Graphen mit mehreren Startpunkten, Verzweigungen und zusammenlaufenden Pfaden. Knoten sind frei verschiebbar, Pfeile bewegen sich mit; „Autoformatieren“ stellt eine geordnete Darstellung wieder her. |
 | **Kalender** | Monatsübersicht mit Fälligkeiten und denselben Aufgabendetails. Fließender Wechsel zur Tagesplanung: ausgewähltes Datum, Terminbezug und Projektfilter bleiben erhalten. |
 
 **Die Eisenhower-Matrix befindet sich im Dialog des einzelnen To-dos.** Der Ablauf:
@@ -34,6 +34,8 @@ Prüfung: `corepack pnpm test` für die Modelltests und `corepack pnpm test:ui` 
 3. **Später ändern:** Ein Klick auf das To-do in jeder Ansicht öffnet denselben Dialog mit seiner bisherigen Position. Verschieben und Speichern aktualisiert die Priorität überall; Abbrechen verwirft die Änderung.
 
 Die Zuordnung ist auch per Tastatur und Werteingabe möglich. Projektblöcke verwenden für ihre eigene Priorität denselben Editor in den Projektdetails. Auf kleinen Bildschirmen kann der Dialog den ganzen Bildschirm einnehmen.
+
+**Einordnung im Projektgraphen:** Bei der Projektwahl öffnet sich ein Popup mit dem vorhandenen Graphen. Dort lassen sich mehrere Vorgänger und Nachfolger markieren oder ein eigener Startpunkt wählen. Das Plus am Knoten legt direkt einen Folgeschritt mit diesem Vorgänger an. Weitere Pfeile entstehen direkt zwischen den seitlichen Verbindungspunkten, ohne den To-do-Dialog zu öffnen; ausgewählte Verbindungen können wieder entfernt werden. Es gibt keine Beschränkung auf einen Parent oder ein Child. Dialogänderungen einschließlich der Verbindungen werden erst beim Speichern des To-dos übernommen; Abbrechen verwirft den gesamten Entwurf.
 
 **Terminlogik:** Arbeitstag (`plannedDate`) und Fälligkeit (`dueDate`) sind getrennt. Tagesplanung und Kalender starten standardmäßig mit „Geplant“ beziehungsweise „Fällig“; beide erlauben den Wechsel des Terminbezugs. Verschieben ändert ausschließlich den angezeigten Termintyp. Aufgaben ohne Datum bleiben über „Ohne Termin“ erreichbar.
 
@@ -48,7 +50,7 @@ Die Zuordnung ist auch per Tastatur und Werteingabe möglich. Projektblöcke ver
 | Verschieben im Web | **dnd-kit** | Prioritätsmarkierung in der Lightbox und Sortierung in der Tagesplanung. |
 | Projektgraph im Web | **React Flow** (`@xyflow/react`) und **Dagre** | Bearbeitbare Knoten und Verbindungen; Dagres Layoutberechnung lässt sich auch nativ nutzen. |
 | Kalender im Web | **FullCalendar React** mit freien Monats-/Interaktionsmodulen | Monatsübersicht und Terminbearbeitung. |
-| Speicherung und Anmeldung | **Supabase mit PostgreSQL, Auth und SQL** | Dauerhafte Speicherung; Datenbankregeln (Row Level Security) schützen die eigenen Daten. |
+| Speicherung und Anmeldung | **Supabase mit PostgreSQL, Auth, Storage und SQL** | Dauerhafte Speicherung; Datenbankregeln (Row Level Security) schützen Aufgaben und Projekte. Eigene Bilder liegen später in privatem Storage mit kontrolliertem Zugriff. |
 | Betrieb und Prüfung | **Vercel + Supabase**, **Vitest + Playwright** | Hosting sowie Tests für Fachlogik und zentrale Bedienabläufe. |
 
 Vorgesehen ist ein persönlicher Arbeitsbereich mit Anmeldung, auch für mehrere Geräte. Supabase übernimmt das Backend für Web und Mobile.
@@ -59,11 +61,11 @@ React und React Native teilen Komponentenprinzip und Hooks. Browserkomponenten w
 
 | Objekt | Wesentliche Angaben |
 | --- | --- |
-| **Projekt** | ID, Besitzer, Name, Beschreibung, Farbe und eigene Wichtigkeit/Dringlichkeit; unabhängig von den Prioritäten seiner Aufgaben. |
+| **Projekt** | ID, Besitzer, Name, Beschreibung, Farbe, optionaler Verweis auf ein eigenes Bild und eigene Wichtigkeit/Dringlichkeit; unabhängig von den Prioritäten seiner Aufgaben. |
 | **Aufgabe** | ID, Besitzer, optionales Projekt, Titel, Beschreibung, Status (`offen`, `in Arbeit`, `erledigt`), Wichtigkeit und Dringlichkeit (0–100), `plannedDate`, `dueDate`, Sortierposition, Kennzeichen „optional“ und Position im Projektgraphen. |
 | **Abhängigkeit** | Vorgänger → Nachfolger innerhalb eines Projekts; Verbindung als verbindliche Voraussetzung oder Empfehlung. |
 
-Kreisförmige Abhängigkeiten werden verhindert. Ein Schritt wird verfügbar, sobald seine verbindlichen Voraussetzungen erledigt sind. Optionale Schritte blockieren keine Pflichtaufgabe. Der Fortschritt berechnet sich als erledigte Pflichtaufgaben / alle Pflichtaufgaben.
+Selbstverbindungen, doppelte Pfeile, projektübergreifende Verbindungen und Kreise werden verhindert. Ein Schritt wird verfügbar, sobald seine verbindlichen Voraussetzungen erledigt sind. Verbindungen von optionalen Schritten zu Pflichtaufgaben sind Empfehlungen und blockieren den Pflichtpfad nicht. Der Aufgabenstatus bleibt sichtbar, wird aber nicht zu einem vermeintlichen Projektfortschritt in Prozent zusammengezählt.
 
 Arbeitstage und Fälligkeiten sind zunächst reine Kalenderdaten. Die manuell gesetzte Priorität bleibt unabhängig von diesen Terminen.
 
@@ -86,6 +88,7 @@ apps/
 packages/
   domain/           Datentypen, Validierung, Prioritäts- und Abhängigkeitsregeln
   data/             Supabase-Zugriff und gemeinsame Daten-Hooks
+  integrations/     später: Schnittstellen für Kalender- und Mailanbieter
   design-tokens/    Farben, Abstände und weitere Gestaltungswerte
 supabase/
   migrations/       Datenmodell und Zugriffsregeln
@@ -103,14 +106,26 @@ In der nativen App werden Erinnerungen pro Aufgabe mit Zeitpunkt, Zeitzone, Ton,
 
 [Expo Notifications](https://docs.expo.dev/versions/latest/sdk/notifications/) bietet einen Einstieg für lokale Erinnerungen. Ein anhaltender Wecker benötigt je nach Betriebssystem zusätzliche native Alarmfunktionen und Berechtigungen. Dafür werden Expo Development Builds und bei Bedarf eigene native Module eingeplant. Das Verhalten bei gesperrtem Gerät, Energiesparen und Neustarts wird auf echten Geräten geprüft.
 
-## 6. Vorgehen in überschaubaren Schritten
+## 6. Spätere Outlook-Anbindung
+
+Die Kalenderansicht bleibt von externen Anbietern unabhängig. Geplant ist eine `CalendarProvider`-Schnittstelle zum Lesen von Änderungen sowie zum Anlegen, Aktualisieren und Entfernen ausdrücklich synchronisierter Termine. Ein späterer Microsoft-Graph-Adapter bindet Outlook an; der Prototyp stellt noch keine Verbindung her.
+
+- **Freigabe und Datenschutz:** Microsoft-Anmeldung über OAuth mit PKCE und nur den nötigen delegierten Berechtigungen. Kalender- und Mailzugriff werden getrennt freigegeben. Tokens werden sicher serverseitig verwaltet, nicht im gemeinsamen UI-Code oder in Logs.
+- **Synchronisierung:** Aufgaben-/Termin-Zuordnung mit externer Kalender- und Ereignis-ID, Änderungsstand und Sync-Cursor. Delta-Abfragen, erneuerbare Webhooks, Wiederholungsversuche und Konfliktregeln verhindern Doppelanlagen und unbemerkte Überschreibungen. Zeitzonen, ganztägige Fälligkeiten, Serien und Löschungen benötigen eigene Regeln.
+- **Outlook-Mail:** Optional später ein ausgewähltes Mail-Element in ein To-do übernehmen. Das ist ein eigener Adapter und kein notwendiger Bestandteil der Kalendersynchronisierung.
+- **Vor der Umsetzung festlegen:** Welche Termine synchronisiert werden, ob der Abgleich ein- oder beidseitig läuft und wie Konflikte beziehungsweise Löschungen bestätigt werden. Keine automatischen Änderungen an Outlook ohne aktivierte Verknüpfung.
+
+Technische Grundlage: [Microsoft Graph für Outlook-Änderungen](https://learn.microsoft.com/en-us/graph/outlook-change-notifications-overview) und [inkrementeller Kalenderabgleich](https://learn.microsoft.com/en-us/graph/delta-query-events).
+
+## 7. Vorgehen in überschaubaren Schritten
 
 1. **Bedienkonzept:** Ansichten und To-do-Lightbox skizzieren; Erstellen, Priorisieren und erneutes Öffnen durchspielen.
 2. **Grundlage:** Workspace mit Web-App und gemeinsamen Paketen, Anmeldung und Datenbank aufsetzen; Aufgaben und Projekte anlegen.
-3. **Erste nutzbare Version:** Aufgabendialog mit Eisenhower-Matrix und Tagesplanung in beiden Ausrichtungen, inklusive Sortieren und Speichern.
+3. **Erste nutzbare Version:** Aufgabendialog mit Eisenhower-Matrix und fortlaufendem Arbeitsbereich in beiden Ausrichtungen, inklusive Sortieren und Speichern. „Ohne Termin“ bleibt oben.
 4. **Kalender:** Monatsübersicht, Terminbearbeitung und Wechsel zur Tagesplanung.
-5. **Projektbäume:** Bearbeitbare Knoten/Verbindungen, Voraussetzungen, optionale Schritte und Fortschritt.
+5. **Projektbäume:** Projekte mit eigenen Bildern, Einordnungsdialog, frei verschiebbare Knoten, viele ein-/ausgehende Verbindungen, Knoten-Plus und Autoformatierung; Voraussetzungen und optionale Schritte ohne Fortschrittsbalken.
 6. **Web-Version prüfen und bereitstellen:** Prioritätsänderungen in allen Ansichten, Dialog-Speichern/Abbrechen, Abhängigkeiten, Termine, Zugriffsregeln und Bedienung auf kleinen Bildschirmen testen; anschließend veröffentlichen.
 7. **Spätere mobile Erweiterung:** Expo-App an gemeinsame Pakete anbinden, native Ansichten umsetzen und Weckerfunktion mit Betriebssystem-Anbindung entwickeln.
+8. **Optionale Outlook-Integration:** Den Anbieter-Adapter nach Festlegung der Sync-Regeln ergänzen; Kalender zuerst, Mail-Übernahme separat.
 
 Nach Schritt 3 steht die erste nutzbare Web-Version; nach Schritt 6 sind die Web-Funktionen vollständig. React Native und Wecker bilden den anschließenden Ausbau.
