@@ -2,7 +2,22 @@
 
 Eine Web-App für Prioritäten, Tagesplanung und Projektfortschritt, vorbereitet für eine spätere App mit React Native. Aufgaben erscheinen als verschiebbare Bausteine. Jede Aufgabe wird nur einmal gespeichert: Änderungen sind in allen Ansichten sichtbar.
 
-**Stand:** Architektur- und Umsetzungsplan; die App ist noch nicht implementiert. Die Web-Version umfasst Aufgaben, Projekte und Termine. Die Weckerfunktion folgt später in der nativen App.
+**Stand:** Schritt 1 ist als klickbares Bedienkonzept umgesetzt. Die eigentliche React-App mit Anmeldung und Datenbank folgt erst nach dem Review. Die Weckerfunktion bleibt der späteren nativen App vorbehalten.
+
+### Bedienkonzept ausprobieren
+
+```sh
+corepack pnpm install --frozen-lockfile
+corepack pnpm dev
+```
+
+Anschließend [die lokale Vorschau](http://127.0.0.1:4173) öffnen. Voraussetzung: Node.js ab Version 22 und Corepack. Ohne Paketinstallation lässt sich die Vorschau auch direkt mit `node prototype/server.mjs` starten.
+
+**Zum Review:** Ein To-do erstellen, seinen Punkt in der Matrix verschieben, speichern und erneut öffnen. Danach Prioritäten ändern oder mit „Abbrechen“ verwerfen und zwischen Spalten, Liste, Projektbaum und Kalender wechseln. Unter „Entwurf 01“ stehen die Review-Fragen.
+
+Der separate Prototyp unter `prototype/` verwendet HTML, CSS und JavaScript ohne Browser-Laufzeitabhängigkeiten. Er legt die spätere React-/React-Native-Architektur nicht fest. Alle Inhalte sind Beispieldaten; Änderungen bleiben nur bis zum Neuladen erhalten. Anmeldung, dauerhafte Speicherung, Verschieben zwischen Tagen, freie Graphbearbeitung und Projekteinstellungen sind noch nicht umgesetzt.
+
+Prüfung: `corepack pnpm test` für die Modelltests und `corepack pnpm test:ui` für die Browserabläufe. Der folgende Plan beschreibt weiterhin die vollständige spätere App.
 
 ## 1. Ansichten und Bedienung
 

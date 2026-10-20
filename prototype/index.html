@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light">
+    <meta name="description" content="Klickbarer Entwurf für eine ruhigere Tagesplanung. Schritt 1: Bedienkonzept zur gemeinsamen Abstimmung.">
+    <title>fokus — Bedienkonzept</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="stylesheet" href="/styles.css">
+    <script type="module" src="/app.mjs"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Zum Inhalt springen</a>
+    <div id="app"></div>
+    <dialog id="task-dialog" class="task-dialog" aria-labelledby="task-dialog-title">
+      <form id="task-form">
+        <header class="dialog-header">
+          <div>
+            <div class="eyebrow">EIN SCHRITT NACH DEM ANDEREN</div>
+            <h2 id="task-dialog-title">Neues To-do</h2>
+          </div>
+          <button class="icon-button close-dialog" type="button" aria-label="Dialog schließen">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg>
+          </button>
+        </header>
+        <div class="dialog-body">
+          <section class="task-fields" aria-label="Aufgabendetails">
+            <label class="field title-field">
+              <span>Was möchtest du angehen? <span class="required-hint">Pflichtfeld</span></span>
+              <input id="task-title" name="title" type="text" maxlength="140" required placeholder="Dein nächster kleiner Schritt …" autocomplete="off">
+            </label>
+            <label class="field">
+              <span>Notizen <span class="optional-hint">optional</span></span>
+              <textarea id="task-description" name="description" rows="3" maxlength="2000" placeholder="Gedanken, Details oder ein guter Startpunkt."></textarea>
+            </label>
+            <label class="field">
+              <span>Projekt</span>
+              <select id="task-project" name="project"></select>
+            </label>
+            <div class="field-row">
+              <label class="field">
+                <span>Geplant für</span>
+                <input id="task-planned" name="plannedDate" type="date">
+              </label>
+              <label class="field">
+                <span>Fällig bis</span>
+                <input id="task-due" name="dueDate" type="date">
+              </label>
+            </div>
+            <p class="field-note">Dein Arbeitstag und die feste Frist dürfen verschieden sein.</p>
+            <label class="field">
+              <span>Status</span>
+              <select id="task-status" name="status">
+                <option value="open">Offen</option>
+                <option value="progress">In Arbeit</option>
+                <option value="done">Erledigt</option>
+              </select>
+            </label>
+            <label class="checkbox-field">
+              <input id="task-optional" name="optional" type="checkbox">
+              <span>Optionaler Schritt<small>Ein Extra, das den Pflichtpfad nicht blockiert.</small></span>
+            </label>
+          </section>
+          <section class="priority-panel" aria-labelledby="priority-heading">
+            <div class="eyebrow">DEINE PRIORITÄT</div>
+            <h3 id="priority-heading">Was zählt gerade?</h3>
+            <p>Ein To-do. Zwei Fragen. Finde seinen Platz.</p>
+            <div class="matrix-layout">
+              <span class="axis-y">WICHTIGKEIT <span aria-hidden="true">→</span></span>
+              <div id="priority-matrix" class="priority-matrix" role="group" aria-label="Eisenhower-Matrix" aria-describedby="matrix-help">
+                <div class="quadrant quadrant-plan" data-quadrant="plan"><strong>Einplanen</strong><small>Raum dafür schaffen</small><span>01</span></div>
+                <div class="quadrant quadrant-do" data-quadrant="do"><strong>Jetzt erledigen</strong><small>Hier liegt dein Fokus</small><span>02</span></div>
+                <div class="quadrant quadrant-later" data-quadrant="later"><strong>Zurückstellen</strong><small>Darf noch warten</small><span>03</span></div>
+                <div class="quadrant quadrant-delegate" data-quadrant="delegate"><strong>Delegieren</strong><small>Unterstützung finden</small><span>04</span></div>
+                <div id="matrix-guide-x" class="matrix-guide matrix-guide-x"></div>
+                <div id="matrix-guide-y" class="matrix-guide matrix-guide-y"></div>
+                <button id="priority-marker" type="button" class="priority-marker" aria-label="Priorität verschieben" aria-describedby="matrix-help">
+                  <span></span>
+                </button>
+              </div>
+              <span class="axis-x">DRINGLICHKEIT <span aria-hidden="true">→</span></span>
+            </div>
+            <p id="matrix-help" class="matrix-help">Klicken, ziehen oder am Punkt die Pfeiltasten nutzen.</p>
+            <div class="priority-values">
+              <label for="task-urgency"><span>Dringlichkeit</span><span class="number-field"><input id="task-urgency" type="number" min="0" max="100" step="1" required><span>/ 100</span></span></label>
+              <label for="task-importance"><span>Wichtigkeit</span><span class="number-field"><input id="task-importance" type="number" min="0" max="100" step="1" required><span>/ 100</span></span></label>
+            </div>
+            <div id="priority-summary" class="priority-summary" aria-live="polite"></div>
+          </section>
+        </div>
+        <footer class="dialog-footer">
+          <p>Ein To-do, überall derselbe Stand.<br><span>Im Entwurf nur bis zum Neuladen gespeichert.</span></p>
+          <div>
+            <button class="button button-quiet close-dialog" type="button">Abbrechen</button>
+            <button id="save-task" class="button button-primary" type="submit">To-do erstellen</button>
+          </div>
+        </footer>
+      </form>
+    </dialog>
+    <dialog id="review-dialog" class="review-dialog" aria-labelledby="review-heading">
+      <div class="eyebrow">SCHRITT 01 · DEIN FEEDBACK</div>
+      <h2 id="review-heading">Wie fühlt sich der Ablauf an?</h2>
+      <p>Das ist ein klickbares Bedienkonzept mit Beispieldaten, noch keine fertige App. Änderungen verschwinden beim Neuladen.</p>
+      <ol>
+        <li><strong>Ein neues To-do anlegen.</strong><span>Findest du alle Angaben dort, wo du sie erwartest?</span></li>
+        <li><strong>Seinen Platz in der Matrix finden.</strong><span>Sind die Achsen und das Verschieben verständlich?</span></li>
+        <li><strong>Speichern, öffnen, neu priorisieren.</strong><span>Passt die Lightbox für diesen wiederkehrenden Ablauf?</span></li>
+        <li><strong>Die Perspektive wechseln.</strong><span>Spalten oder Liste? Fühlt sich der Weg zum Projekt und Kalender stimmig an?</span></li>
+      </ol>
+      <div class="review-note">Noch nicht enthalten: Anmeldung, dauerhafte Speicherung, freies Bearbeiten der Projektverbindungen und Verschieben zwischen Tagen. Die Web-App bekommt keinen Wecker.</div>
+      <button id="close-review" class="button button-primary" type="button">Los geht’s</button>
+    </dialog>
+    <div id="toast" role="status" aria-live="polite" class="toast"></div>
+  </body>
+</html>
