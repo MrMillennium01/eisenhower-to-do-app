@@ -4,6 +4,12 @@ Eine Web-App für Prioritäten, Tagesplanung und Projektfortschritt, vorbereitet
 
 **Stand:** Schritt 1, Entwurf 03: klickbares Bedienkonzept mit bearbeitbarem Projektgraphen und durchgehender, vollbreiter To-do-Liste. Die eigentliche React-App mit Anmeldung und Datenbank folgt erst nach dem Review. Die Weckerfunktion bleibt der späteren nativen App vorbehalten.
 
+### Übergabe an einen KI-Agenten
+
+Die separate **[Agenten-README in AGENTS.md](AGENTS.md)** fasst den aktuellen Funktionsumfang, verbindliche Anforderungen, technischen Ist-Stand, Start- und Testbefehle, bekannte Grenzen und nächste Schritte zusammen. Sie ist ohne die frühere Unterhaltung verständlich und unterscheidet ausdrücklich zwischen dem vorhandenen Prototyp und der noch geplanten Produktions-App.
+
+**Noch offen:** Betrieb auf dem eigenen PC oder über einen Hosting-Dienst. Eine produktive Server- oder Datenbankeinrichtung wurde bisher nicht beauftragt.
+
 ### Bedienkonzept ausprobieren
 
 ```sh
